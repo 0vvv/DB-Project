@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>查询结果</title>
+  <link rel="stylesheet" href="../layui/css/layui.css">
+  <link rel= "stylesheet" type="text/css" href="style.css" charset="utf-8">
+</head>
+<body>
+<ul class="layui-nav" lay-filter="bar">
+  <li class="layui-nav-item" name="note"><a id="loginUser">你好，</a></li>
+  <li class="layui-nav-item" name="note"><a href=""></a></li>
+  <li class="layui-nav-item layui-this" name="main"><a href="userspace.html">主页</a></li>
+  <li class="layui-nav-item" name="collect"><a href="collection.html">收藏夹</a></li>
+  <li class="layui-nav-item" name="note"><a href="note.html">我的笔记</a></li>
+  <li class="layui-nav-item" name="note"><a onclick="js_method();">登出</a></li>
+</ul>
+
+<table id="demo" lay-filter="test"></table>
+
+<script type="text/html" id="barDemo">
+    <a class="layui-btn  layui-btn-normal layui-btn-sm" lay-event="star">收藏</a>
+    <a class="layui-btn layui-btn-sm" lay-event="note">添加笔记</a>
+</script>
+
+<!--用户登录设置-->
+<script src="../layui/layui.js"></script>
+<script>
+    function js_method(){
+        window.location.href = "../../common/logout";
+    }
+    
+    layui.use(['form','jquery','layer'], function () {
+        var $   = layui.jquery;
+        function getData(){
+            $.ajax({
+                url:'../common/user',
+                method:'get',
+                type:'text',
+                success:function(data){
+                    var loginUser=$("#loginUser");
+                    if(data=='-1'){
+                        alert("登录已过期！");
+                        location.href = "../login/index.html";
+                    }
+                    loginUser.append(data);
+                }
+            })
+        };
+        window.onload = getData();
+    });
+</script>
+
+<!--table配置-->
+<script>
+layui.use('table', function(){
+  var table = layui.table;
+  var loc = location.href;
+  var n1 = loc.length;
+  var n2 = loc.indexOf('='); 
+  var $   = layui.jquery;
+  var txt = decodeURI(loc.substr(n2+1,n1-n2));
+  //第一个实例
+  table.render({
+    elem: '#demo'
+    ,height:'full-80'
+    ,url: '../../common/search' //数据接口
+    , where: {info: txt}
+    , method: "get"//请求方式
+    ,page: true //开启分页
+    ,request: {
+        pageName: 'curr' //页码的参数名称，默认：page
+        ,limitName: 'nums' //每页数据量的参数名，默认：limit
+    }
+    
+    ,cols: [[ //表头
+      {field:'id',title:'ID',sort: true,width:80},
+      {field: 'author', title: '作者',width:120},
+      {field: 'title', title: '标题',width:150},
+      {field: 'content', title: '内容'},
+      {field:'right', title: '操作', width:180,toolbar:"#barDemo"}
+    ]]
+    , limit: 13//默认每页条数
+    , limits: [10, 13, 20, 25, 30]//每页可展示条数选项
+    , text: '对不起，加载出现异常！'
+    , done: function (res) {//此res为上述parseData对应的函数解析完初始返回值构成的对象
+         if (!res.data || res.data.length == 0) {
+             $(".layui-none").html("未查询到数据");//后台查询数据为空时，table默认展示内容
+         }
+     }
+  });
+  
+});
+</script>
+
+<!--table工具栏配置-->
+<script>
+    layui.use('table', function(){
+        var table = layui.table;
+        var $ = layui.$;
+
+        table.on('tool(test)', function(obj){
+            var data = obj.data;
+            var name="";
+            $.ajax({
+                url:'../common/user',
+                method:'get',
+                type:'text',
+                success:function(data){
+                    if(data=='-1'){
+                        alert("登录已过期！");
+                        location.href = "../login/index.html";
+                    }
+                    name=data;
+                }
+            })
+
+            if(obj.event === 'star'){
+                layer.confirm('确定收藏？', function(index){
+                     $.ajax({
+                         url:'../../user/addcollect',
+                         type:"post",
+                         data:{"poem_id":data.id,"name":name,"title":data.title,"content":data.content},
+                         dataType:"text",
+                         success:function(data){
+                             if(data=='-1'){
+                                 layer.msg("该项已收藏过");
+                                 
+                             }
+                             else{
+                                 layer.msg("收藏成功")
+                             }
+                             layer.close(index);
+                         }
+                     });
+                });
+            }
+
+            else if(obj.event === 'note'){
+                layer.prompt({
+                        formType: 2
+                        ,title: '为ID ['+ data.id +'] 的诗词添加笔记'
+                        ,value:""
+                    }, function(value,index){
+                        $.ajax({
+                            url: "../../user/addnote",
+                            type: "POST",
+                            data:{"poem_id":data.id,"name":name,"note":value,"title":data.title,"content":data.content},
+                            dataType: "text",
+                            success: function(data){
+                                if(data=='0'){
+                                //关闭弹框
+                                    layer.close(index);
+                                    layer.msg("添加成功");
+                                }else{
+                                    layer.msg("添加失败，诗词已添加过笔记");
+                                }
+                            }
+                        });
+                });
+            }
+        });
+    });
+</script>
+</body>
+</html>

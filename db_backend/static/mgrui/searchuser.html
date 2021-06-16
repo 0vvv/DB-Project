@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>用户查询结果</title>
+  <link rel="stylesheet" href="../layui/css/layui.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<ul class="layui-nav" lay-filter="bar">
+  <li class="layui-nav-item" name="note"><a id="loginUser">你好，</a></li>
+  <li class="layui-nav-item" name="note"><a href=""></a></li>
+  <li class="layui-nav-item  layui-this" name="note"><a href="mgr.html">用户管理</a></li>
+  <li class="layui-nav-item" name="note"><a href="showpoem.html">诗词管理</a></li>
+  <li class="layui-nav-item" name="note"><a href=""></a></li>
+  <li class="layui-nav-item" name="note"><a onclick="js_method();">登出</a></li>
+</ul>
+
+<div class="container">
+    <form action="" class="parent">
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <input type="text" placeholder="请输入..." name="" id="info" value="" />
+    <input type="button" id="search_btn" value="搜索一下"></button>
+    </form>
+</div>
+
+<table id="demo" lay-filter="test"></table>
+
+<script type="text/html" id="barDemo">
+    <a class="layui-btn layui-btn-danger layui-btn-sm" lay-event="del">删除</a>
+</script>
+
+<script src="../layui/layui.js"></script>
+
+<script>
+//注意：导航 依赖 element 模块，否则无法进行功能性操作
+layui.use('element', function(){
+  var element = layui.element;
+  var $ = layui.$;
+});
+</script>
+
+<script>
+    var btn=document.getElementById("search_btn");
+    var key=document.getElementById("info");
+
+    btn.onclick =function(){
+        location.href='searchuser.html?'+'info=' + encodeURI(key.value);
+    }
+</script>
+
+
+<!--显示搜索出来的用户ID、用户姓名以及对应删除操作-->
+<script>
+layui.use('table', function(){
+  var table = layui.table;
+  var loc = location.href;
+  var n1 = loc.length;
+  var n2 = loc.indexOf('=');
+  var $   = layui.jquery;
+  var txt = decodeURI(loc.substr(n2+1,n1-n2));
+
+  table.render({
+    elem: '#demo'
+    ,height:'full-150'
+    ,url: '../mgr/searchuser' //数据接口
+    , where: {info: txt}
+    ,method: "get"//请求方式
+    ,page: true //开启分页
+    ,request: {
+        pageName: 'curr' //页码的参数名称，默认：page
+        ,limitName: 'nums' //每页数据量的参数名，默认：limit
+    }
+    ,cols: [[ //表头
+      {field:'id',title:'用户ID',align:'center',sort: true,width:500},
+      {field:'name',title:'用户名',align:'center',sort:true,width:500},
+      {field:'right', title: '操作', align:'center',toolbar:"#barDemo"}
+    ]]
+    , limit: 10//默认每页条数
+    , limits: [10, 20, 25, 30]//每页可展示条数选项
+    , text: '对不起，加载出现异常！'
+    , done: function (res) {//此res为上述parseData对应的函数解析完初始返回值构成的对象
+         if (!res.data || res.data.length == 0) {
+             $(".layui-none").html("未查询到数据");//后台查询数据为空时，table默认展示内容
+         }
+     }
+  });
+
+});
+</script>
+
+<!--删除操作设置-->
+<script>
+layui.use('table', function(){
+        var table = layui.table;
+        var $ = layui.$;
+
+        table.on('tool(test)', function(obj){
+            var data = obj.data;
+
+            if(obj.event === 'del'){
+                layer.confirm('确定删除该用户的所有信息？', function(index){
+                    $.ajax({
+                        url: "../../mgr/deluser",
+                        type: "POST",
+                        data:{"id":data.id},
+                        dataType: "text",
+                        success: function(data){
+                            if(data=='0'){
+                            //删除这一行
+                                obj.del();
+                            //关闭弹框
+                                layer.close(index);
+                                layer.msg("删除成功");
+                            }else{
+                                layer.msg("删除失败");
+                            }
+                        }
+
+                    });
+                });
+            }
+        });
+});
+</script>
+
+<!--登出功能-->
+<script>
+     function js_method(){
+        window.location.href = "../../common/logout";
+    }
+
+    layui.use(['form','jquery','layer'], function () {
+        var $   = layui.jquery;
+        function getData(){
+            $.ajax({
+                url:'../common/user',
+                method:'get',
+                type:'text',
+                success:function(data){
+                    var loginUser=$("#loginUser");
+                    if(data=='-1'){
+                        alert("登录已过期！");
+                        location.href = "../login/index.html";
+                    }
+                    loginUser.append(data);
+                }
+            })
+        };
+        window.onload = getData();
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>我的笔记</title>
+  <link rel="stylesheet" href="../layui/css/layui.css">
+</head>
+<body>
+		<div class="demo">
+			<div class="demo1">
+<ul class="layui-nav" lay-filter="bar">
+  <li class="layui-nav-item" name="note"><a id="loginUser">你好，</a></li>
+  <li class="layui-nav-item" name="note"><a href=""></a></li>
+  <li class="layui-nav-item" name="main"><a href="userspace.html">主页</a></li>
+  <li class="layui-nav-item" name="collect"><a href="collection.html">收藏夹</a></li>
+  <li class="layui-nav-item layui-this" name="note"><a href="note.html">我的笔记</a></li>
+  <li class="layui-nav-item" name="note"><a onclick="js_method();">登出</a></li>
+</ul>
+ 
+<table id="demo" lay-filter="test"></table>
+<script type="text/html" id="barDemo">
+    <a class="layui-btn layui-btn-sm" lay-event="edit">修改</a>
+    <a class="layui-btn layui-btn-danger layui-btn-sm" lay-event="del">删除</a>
+</script> 
+
+<script src="../layui/layui.js"></script>
+
+
+<!--table配置-->
+<script>
+layui.use('table', function(){
+  var table = layui.table;
+  var $ = layui.$;
+  
+  table.render({
+    elem: '#demo'
+    ,height:'full-90'
+    ,url: '../user/checknote' //数据接口
+    ,method: "get"//请求方式
+    ,page: true //开启分页
+    ,request: {
+        pageName: 'curr' //页码的参数名称，默认：page
+        ,limitName: 'nums' //每页数据量的参数名，默认：limit
+    }
+    ,cols: [[ //表头
+      {field:'id',title:'ID',sort: true,width:80},
+      {field:'user_id',title:'用户ID',sort:true,width:80},
+      {field: 'poem_id', title: '诗词ID',sort:true,width:80},
+      {field: 'poem_title', title: '诗名',width:150},
+      {field: 'poem_content', title: '内容',width:450},
+      {field: 'content', title: '笔记'},
+      {field:'right', title: '操作', width:200,toolbar:"#barDemo"}
+    ]]
+    , limit: 15//默认每页条数
+    , limits: [10, 15, 20, 25, 30]//每页可展示条数选项
+    , text: '对不起，加载出现异常！'
+    , done: function (res) {//此res为上述parseData对应的函数解析完初始返回值构成的对象
+         if (!res.data || res.data.length == 0) {
+             $(".layui-none").html("未查询到数据");//后台查询数据为空时，table默认展示内容
+         }
+     }
+  });
+  
+});
+</script>
+
+<!--table工具栏配置-->
+<script>
+layui.use('table', function(){
+        var table = layui.table;
+        var $ = layui.$;
+
+        table.on('tool(test)', function(obj){
+            var data = obj.data;
+
+            if(obj.event === 'del'){
+                layer.confirm('确定删除本条记录？', function(index){
+                    $.ajax({
+                        url: "../../user/delnote",
+                        type: "POST",
+                        data:{"id":data.id},
+                        dataType: "text",
+                        success: function(data){
+                            if(data=='0'){
+                            //删除这一行
+                                obj.del();
+                            //关闭弹框
+                                layer.close(index);
+                                layer.msg("删除成功");
+                            }else{
+                                layer.msg("删除失败");
+                            }
+                        }
+
+                    });
+                });
+            }
+            else if(obj.event==='edit'){
+              layer.prompt({
+                        formType: 2
+                        ,title: '为ID ['+ data.id +'] 的诗词修改笔记'
+                        ,value:data.content
+                    }, function(value,index){
+                        $.ajax({
+                            url: "../../user/changenote",
+                            type: "POST",
+                            data:{"id":data.id,"content":value},
+                            dataType: "text",
+                            success: function(data){
+                                if(data=='0'){
+                                //关闭弹框
+                                    layer.close(index);
+                                //同步更新表格和缓存对应的值
+                                    obj.update({
+                                        content : value
+                                    });
+                                    layer.msg("修改成功");
+                                }else{
+                                    layer.msg("修改失败，笔记不存在");
+                                }
+                            }
+                        });
+                });
+            } 
+        });
+});
+</script>
+
+<!--用户登录设置-->
+<script>
+    function js_method(){
+        window.location.href = "../../common/logout";
+    }
+    
+    layui.use(['form','jquery','layer'], function () {
+        var $   = layui.jquery;
+        function getData(){
+            $.ajax({
+                url:'../common/user',
+                method:'get',
+                type:'text',
+                success:function(data){
+                    var loginUser=$("#loginUser");
+                    if(data=='-1'){
+                        alert("登录已过期！");
+                        location.href = "../login/index.html";
+                    }
+                    loginUser.append(data);
+                }
+            })
+        };
+        window.onload = getData();
+    });
+</script>
+			</div>
+		</div>
+</body>
+</html>

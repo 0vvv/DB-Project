@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>寻诗</title>
+  <link rel="stylesheet" href="../layui/css/layui.css">
+  <link rel= "stylesheet" type="text/css" href="style.css" charset="utf-8">
+</head>
+<body>
+<ul class="layui-nav" lay-filter="bar">
+  <li class="layui-nav-item" name="note"><a id="loginUser">你好，</a></li>
+  <li class="layui-nav-item" name="note"><a href=""></a></li>
+  <li class="layui-nav-item layui-this" name="main"><a href="userspace.html">主页</a></li>
+  <li class="layui-nav-item" name="collect"><a href="collection.html">收藏夹</a></li>
+  <li class="layui-nav-item" name="note"><a href="note.html">我的笔记</a></li>
+  <li class="layui-nav-item" name="note"><a onclick="js_method();">登出</a></li>
+</ul>
+
+<div class="search">
+    <input type="text" placeholder="请输入..." name="" id="info" value="" />
+    <button id="search_btn"><i>搜 索</i></button>
+</div>
+
+<script src="../layui/layui.js"></script>
+<script>
+//注意：导航 依赖 element 模块，否则无法进行功能性操作
+layui.use('element', function(){
+  var element = layui.element;
+  var $ = layui.$;
+});
+</script>
+
+<script>  
+    var btn=document.getElementById("search_btn");
+    var key=document.getElementById("info");
+
+    btn.onclick =function(){  
+        location.href='search.html?'+'info=' + encodeURI(key.value);
+    }  
+</script>  
+
+<!--用户登录配置-->
+<script src="../layui/layui.js"></script>
+<script>
+    function js_method(){
+        window.location.href = "../../common/logout";
+    }
+    
+    layui.use(['form','jquery','layer'], function () {
+        var $   = layui.jquery;
+        function getData(){
+            $.ajax({
+                url:'../common/user',
+                method:'get',
+                type:'text',
+                success:function(data){
+                    var loginUser=$("#loginUser");
+                    if(data=='-1'){
+                        alert("登录已过期！");
+                        location.href = "../login/index.html";
+                    }
+                    loginUser.append(data);
+                }
+            })
+        };
+        window.onload = getData();
+    });
+
+</script>
+</body>
+</html>

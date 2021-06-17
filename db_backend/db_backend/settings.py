@@ -23,9 +23,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '%mgk7t%rj=6^=mrp*-dhspq@t!_ln&a6vcqwr)@dr-n1z$8nmj'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1','101.34.34.103','*']
 
 
 # Application definition
@@ -77,9 +77,9 @@ WSGI_APPLICATION = 'db_backend.wsgi.application'
 DATABASES = {
      'default': {
             'ENGINE': 'django.db.backends.mysql', #通过这个去链接mysql
-            'NAME': 'db',#数据库名称
-            'USER':'chaos',
-            'PASSWORD':'123456',#密码
+            'NAME': 'chaos',#数据库名称
+            'USER':'root',
+            'PASSWORD':'******',#云服务器数据库密码
             'HOST':'localhost',
             'PORT':'3306',
         }

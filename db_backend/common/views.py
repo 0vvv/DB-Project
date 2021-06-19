@@ -34,6 +34,11 @@ def loginUser(request):
 def registerUser(request):
     na=request.POST.get("username")
     pwd=request.POST.get("password")
+    error1=request.POST.get("error1")
+    error2=request.POST.get("error2")
+
+    if error1!='0' or error2!='0':
+        return HttpResponse('2')
     
     try:
         qs = User.objects.get(name=na)
